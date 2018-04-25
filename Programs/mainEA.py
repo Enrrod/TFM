@@ -54,7 +54,7 @@ logbook = tools.Logbook()
 # Definición del tamaño de la población y el número de generaciones de la primera fase
 
 population = toolbox.population(100)
-NGEN = 500
+NGEN = 200
 hof = tools.HallOfFame(1, similar=np.array_equal)
 
 # Ejecución de la primera fase

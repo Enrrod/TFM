@@ -25,6 +25,7 @@ def gaussGraphInd(icls, seed, mask):
     # Input: The top individual as a seed and the mask of the patient.
     # Output: Weight matrix obtained from mutating and individual with good fitness value.
     graphInd = matMutGauss(seed, 0.1, 0.1, mask)
+    graphInd = graphInd[0]
     return icls(graphInd)
 
 
