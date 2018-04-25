@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
-# THIS MODULE CONTAINS ALL THE FUNCTIONS OF THE EVOLUTIONARY STRATEGIES
+# THIS MODULE CONTAINS ALL THE FUNCTIONS FOR THE EVOLUTIONARY STRATEGIES
 
 import numpy as np
 import random
 from sklearn.metrics import mean_squared_error as mse
 from Functions.GraphAnalysis import degmatrix, lmatrix, eigen, eigen_reduce, eigen_aisle
 
+#----------INDIVIDUAL CREATION FUNCTIONS--------------------------------------------------------------------------------
 
 def graphInd(icls, dim, mask):
     # Function to generate random individuals that satisfy the problem properties.
@@ -16,6 +17,9 @@ def graphInd(icls, dim, mask):
     graphInd = (indGenerator + indGenerator.T) / 2
     np.place(graphInd, mask, 0)
     return icls(graphInd)
+
+
+#----------MUTATION FUNCTIONS-------------------------------------------------------------------------------------------
 
 
 def matMutFloat(individual, rowindpb, elemindpb, mask):
@@ -35,7 +39,7 @@ def matMutFloat(individual, rowindpb, elemindpb, mask):
     return individual,
 
 
-def matMutGauss(individual, rowindpb, elemindpb):
+def matMutGauss(individual, rowindpb, elemindpb, mask):
     size = len(individual)
     for i in range(size):
         rowindMut = random.random()
@@ -52,6 +56,9 @@ def matMutGauss(individual, rowindpb, elemindpb):
     return individual,
 
 
+#----------CROSSOVER FUNCTIONS------------------------------------------------------------------------------------------
+
+
 def patchCx(ind1, ind2):
     # Crossover function that interchange a symmetric patch of genetic material between individuals, the patch
     #  size depends on a random number.
@@ -66,6 +73,9 @@ def patchCx(ind1, ind2):
     del patch1
     del patch2
     return ind1, ind2,
+
+
+#----------FITNESS FUNCTIONS--------------------------------------------------------------------------------------------
 
 
 def fit_function(individual, reference):
