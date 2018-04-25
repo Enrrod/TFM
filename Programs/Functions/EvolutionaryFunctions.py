@@ -19,6 +19,15 @@ def graphInd(icls, dim, mask):
     return icls(graphInd)
 
 
+def gaussGraphInd(icls, seed, mask):
+    # Function to generate gaussian mutated individuals from the top individual of the last optimization. This function
+    # is dependent of the custom gaussian mutation function.
+    # Input: The top individual as a seed and the mask of the patient.
+    # Output: Weight matrix obtained from mutating and individual with good fitness value.
+    graphInd = matMutGauss(seed, 0.1, 0.1, mask)
+    return icls(graphInd)
+
+
 #----------MUTATION FUNCTIONS-------------------------------------------------------------------------------------------
 
 
