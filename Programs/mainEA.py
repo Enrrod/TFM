@@ -44,7 +44,7 @@ stats.register('min', np.min, axis=0)
 stats.register('avg', np.mean, axis=0)
 logbook = tools.Logbook()
 population = toolbox.population(100)
-NGEN = 10
+NGEN = 500
 hof = tools.HallOfFame(1, similar=np.array_equal)
 
 for gen in range(NGEN):
@@ -59,10 +59,13 @@ for gen in range(NGEN):
 	print("Generación " + str(gen + 1) + " de la primera fase completada")
 
 print("Fin de la primera fase de optimización")
-print("Configurando parámetros para la segunda")
+print("Configurando parámetros para la segunda fase...")
+
 seed = top[0]
-toolbox.register('individual', gaussGraphInd, creator.Individual, seed=seed, mask=mask) # Nodos de los grafos con los que trabajamos
+
+toolbox.register('individual', gaussGraphInd, creator.Individual, seed=seed, mask=mask)
 toolbox.register('population', tools.initRepeat, list, toolbox.individual)
+
 toolbox.register('evaluate', fit_function, reference=phy_mean)
 toolbox.register('mate', patchCx)
 toolbox.register('mutate', matMutGauss, rowindpb=0.1, elemindpb=0.1, mask=mask)
@@ -70,7 +73,7 @@ toolbox.register('select', tools.selTournament, tournsize=3)
 
 NGEN2 = NGEN * 2
 
-for gen in range(NGEN):
+for gen in range(NGEN,NGEN2):
 	offspring = algorithms.varAnd(population, toolbox, cxpb, mutpb)
 	fits = toolbox.map(toolbox.evaluate, offspring)
 	for fit, ind in zip(fits, offspring):
@@ -79,7 +82,7 @@ for gen in range(NGEN):
 	top = tools.selBest(population, k=1)
 	record = stats.compile(population)
 	logbook.record(gen=gen, **record)
-	print("Generación " + str(gen + 1) + " de la ssegunda fase completada")
+	print("Generación " + str(gen + 1) + " de la segunda fase completada")
 
 		# -----OBTENCIÓN DE ESTADÍSTICAS Y REPRESENTACIÓN GRÁFICA---------------------------------------------------------------
 
