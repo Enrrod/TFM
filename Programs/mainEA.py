@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from deap import creator, base, tools, algorithms
 from Functions.GraphAnalysis import readgraph, wmatrix, degmatrix, lmatrix, eigen, eigen_reduce, eigen_aisle
-from Functions.EvolutionaryFunctions import graphInd, matMutFloat, patchCx, fit_function
+from Functions.EvolutionaryFunctions import graphInd, gaussGraphInd, matMutFloat, matMutGauss, patchCx, fit_function
 from Functions.ClinicParameters import obtainRef, patientMask
 
 
@@ -56,7 +56,30 @@ for gen in range(NGEN):
 	top = tools.selBest(population, k=1)
 	record = stats.compile(population)
 	logbook.record(gen=gen, **record)
-	print("Generación " + str(gen + 1) + " completada")
+	print("Generación " + str(gen + 1) + " de la primera fase completada")
+
+print("Fin de la primera fase de optimización")
+print("Configurando parámetros para la segunda")
+seed = top[0]
+toolbox.register('individual', gaussGraphInd, creator.Individual, seed=seed, mask=mask) # Nodos de los grafos con los que trabajamos
+toolbox.register('population', tools.initRepeat, list, toolbox.individual)
+toolbox.register('evaluate', fit_function, reference=phy_mean)
+toolbox.register('mate', patchCx)
+toolbox.register('mutate', matMutGauss, rowindpb=0.1, elemindpb=0.1, mask=mask)
+toolbox.register('select', tools.selTournament, tournsize=3)
+
+NGEN2 = NGEN * 2
+
+for gen in range(NGEN):
+	offspring = algorithms.varAnd(population, toolbox, cxpb, mutpb)
+	fits = toolbox.map(toolbox.evaluate, offspring)
+	for fit, ind in zip(fits, offspring):
+		ind.fitness.values = fit
+	population = toolbox.select(offspring, k=len(population))
+	top = tools.selBest(population, k=1)
+	record = stats.compile(population)
+	logbook.record(gen=gen, **record)
+	print("Generación " + str(gen + 1) + " de la ssegunda fase completada")
 
 		# -----OBTENCIÓN DE ESTADÍSTICAS Y REPRESENTACIÓN GRÁFICA---------------------------------------------------------------
 
