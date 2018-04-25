@@ -35,6 +35,23 @@ def matMutFloat(individual, rowindpb, elemindpb, mask):
     return individual,
 
 
+def matMutGauss(individual, rowindpb, elemindpb):
+    size = len(individual)
+    for i in range(size):
+        rowindMut = random.random()
+        if rowindMut < rowindpb:
+            for j in range(size):
+                elemindMut = random.random()
+                if elemindMut < elemindpb:
+                    mu  = individual[i][j]
+                    individual[i][j] = random.gauss(mu, 0.1)
+                    while individual[i][j] < 0:
+                        individual[i][j] = random.gauss(mu, 0.1)
+                    individual[j][i] = individual[i][j]
+    np.place(individual, mask, 0)
+    return individual,
+
+
 def patchCx(ind1, ind2):
     # Crossover function that interchange a symmetric patch of genetic material between individuals, the patch
     #  size depends on a random number.
