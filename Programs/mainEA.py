@@ -10,14 +10,14 @@ from Functions.EvolutionaryFunctions import graphInd, gaussGraphInd, matMutFloat
 from Functions.ClinicParameters import obtainRef, patientMask
 
 
-# -----DEFINICIÓN DE LOS PARÁMETROS CLÍNICOS (AUTOVALOR SANO Y CONEXIONES DAÑADAS)--------------------------------------
+# -----DEFINICIÓN DE LOS PARÁMETROS CLÍNICOS (AUTOVECTOR SANO Y CONEXIONES DAÑADAS)-------------------------------------
 
 filedir = '/home/enrique/Dropbox/TFM/grafos/DrugsCompare/Healthy/60nodos/mean_values.txt'
 phy_mean = obtainRef(filedir)
 graphFileDir = '/home/enrique/Dropbox/TFM/grafos/DrugsCompare/Issues/60nodos/opt_1.graphml'
 mask = patientMask(graphFileDir)
 
-# -----DEFINICIÓN DE LOS PARÁMETROS DE DEAP-----------------------------------------------------------------------------
+# -----DEFINICIÓN DE LOS PARÁMETROS DE DEAP PARA FASE 1-----------------------------------------------------------------
 
 creator.create('FitnessMin', base.Fitness, weights=(-1.0,))
 creator.create('Individual', np.ndarray, fitness=creator.FitnessMin)
@@ -25,7 +25,7 @@ creator.create('Individual', np.ndarray, fitness=creator.FitnessMin)
 # Registro del individuo y la población en la toolbox
 
 toolbox = base.Toolbox()
-toolbox.register('individual', graphInd, creator.Individual, dim=70, mask=mask) # Nodos de los grafos con los que trabajamos
+toolbox.register('individual', graphInd, creator.Individual, dim=70, mask=mask)
 toolbox.register('population', tools.initRepeat, list, toolbox.individual)
 
 # Registro de las estrategias evolutivas
@@ -35,17 +35,29 @@ toolbox.register('mate', patchCx)
 toolbox.register('mutate', matMutFloat, rowindpb=0.1, elemindpb=0.1, mask=mask)
 toolbox.register('select', tools.selTournament, tournsize=3)
 
-# Definición de parametros y ejecución del algoritmo
-mutpb = 0.1
-cxpb = 0.1
+# -----EJECUCIÓN DE LA FASE 1 DEL ALGORITMO-----------------------------------------------------------------------------
+
+# Definición de parametros del algoritmo
+
+mutpb = 0.3
+cxpb = 0.3
+
 print("Cxpb= " + str(cxpb) + " y mutpb= " + str(mutpb))
+
+# Creación de la estadisticas que se van a registrar
+
 stats = tools.Statistics(key=lambda ind: ind.fitness.values)
 stats.register('min', np.min, axis=0)
 stats.register('avg', np.mean, axis=0)
 logbook = tools.Logbook()
+
+# Definición del tamaño de la población y el número de generaciones de la primera fase
+
 population = toolbox.population(100)
 NGEN = 500
 hof = tools.HallOfFame(1, similar=np.array_equal)
+
+# Ejecución de la primera fase
 
 for gen in range(NGEN):
 	offspring = algorithms.varAnd(population, toolbox, cxpb, mutpb)
@@ -58,20 +70,35 @@ for gen in range(NGEN):
 	logbook.record(gen=gen, **record)
 	print("Generación " + str(gen + 1) + " de la primera fase completada")
 
+
 print("Fin de la primera fase de optimización")
 print("Configurando parámetros para la segunda fase...")
 
+# -----DEFINICIÓN DE LOS PARÁMETROS DE DEAP PARA FASE 2-----------------------------------------------------------------
+
+# Individuo semilla a partir del que crear la poblacion incial de la segunda fase
+
 seed = top[0]
+
+# Registro del individuo y la población en la toolbox
 
 toolbox.register('individual', gaussGraphInd, creator.Individual, seed=seed, mask=mask)
 toolbox.register('population', tools.initRepeat, list, toolbox.individual)
+
+# Registro de las estrategias evolutivas
 
 toolbox.register('evaluate', fit_function, reference=phy_mean)
 toolbox.register('mate', patchCx)
 toolbox.register('mutate', matMutGauss, rowindpb=0.1, elemindpb=0.1, mask=mask)
 toolbox.register('select', tools.selTournament, tournsize=3)
 
+# Definición del tamaño de la población y el número de generaciones de la segunda fase
+
+population = toolbox.population(100)
 NGEN2 = NGEN * 2
+hof = tools.HallOfFame(1, similar=np.array_equal)
+
+# Ejecución de la segunda fase
 
 for gen in range(NGEN,NGEN2):
 	offspring = algorithms.varAnd(population, toolbox, cxpb, mutpb)
@@ -84,9 +111,9 @@ for gen in range(NGEN,NGEN2):
 	logbook.record(gen=gen, **record)
 	print("Generación " + str(gen + 1) + " de la segunda fase completada")
 
-		# -----OBTENCIÓN DE ESTADÍSTICAS Y REPRESENTACIÓN GRÁFICA---------------------------------------------------------------
+# -----OBTENCIÓN DE ESTADÍSTICAS Y REPRESENTACIÓN GRÁFICA---------------------------------------------------------------
 
-		# Creación de variables para guardar las estadísticas
+# Creación de variables para guardar las estadísticas
 
 generation = logbook.select('gen')
 fitness_min = logbook.select('min')
@@ -94,6 +121,7 @@ fitness_avg = logbook.select('avg')
 top_ind = top[0]
 
 # Hacemos cálculos para dar valores relativos respecto al estado inicial del paciente
+
 g = readgraph(graphFileDir)
 w_pat = wmatrix(g)
 init_error = fit_function(w_pat, phy_mean)
@@ -116,9 +144,11 @@ plt.legend(lines1, labs1, loc="upper right")
 plt.title("cxpb= " + str(cxpb) + " mutpb= " + str(mutpb))
 plt.show()
 
-'''
-# Rutas para ubuntu CAR
+# -----ALMACENAMIENTO DE ESTADÍSTICAS-----------------------------------------------------------------------------------
 
+# Definición de las rutas de los archivos a guardar
+
+'''
 minFitFile = "/home/enrique/Dropbox/TFM/grafos/DrugsCompare/Issues/AGtest/cxpb" + str(cxpb) + "_mutpb" + str(mutpb) + "/fitness_min" + str(
 	i + 1) + ".csv"
 relMinFitFile = "/home/enrique/Dropbox/TFM/grafos/DrugsCompare/Issues/AGtest/cxpb" + str(cxpb) + "_mutpb" + str(mutpb) + "/fitness_rel" + str(
