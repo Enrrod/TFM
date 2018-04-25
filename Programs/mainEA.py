@@ -42,7 +42,7 @@ toolbox.register('select', tools.selTournament, tournsize=3)
 mutpb = 0.3
 cxpb = 0.3
 
-print("Cxpb= " + str(cxpb) + " y mutpb= " + str(mutpb))
+print("Cross probability: " + str(int(cxpb * 100)) + "% | Mutation probability: " + str(int(mutpb * 100)) + "%")
 
 # Creación de la estadisticas que se van a registrar
 
@@ -68,11 +68,11 @@ for gen in range(NGEN):
 	top = tools.selBest(population, k=1)
 	record = stats.compile(population)
 	logbook.record(gen=gen, **record)
-	print("Generación " + str(gen + 1) + " de la primera fase completada")
+	print("Phase 1: Generation (" + str(gen + 1) + "/" + str(NGEN) + ") completed")
 
 
-print("Fin de la primera fase de optimización")
-print("Configurando parámetros para la segunda fase...")
+print("End of Phase 1")
+print("Setting parameters for Phase 2...")
 
 # -----DEFINICIÓN DE LOS PARÁMETROS DE DEAP PARA FASE 2-----------------------------------------------------------------
 
@@ -109,7 +109,10 @@ for gen in range(NGEN,NGEN2):
 	top = tools.selBest(population, k=1)
 	record = stats.compile(population)
 	logbook.record(gen=gen, **record)
-	print("Generación " + str(gen + 1) + " de la segunda fase completada")
+	print("Phase 2: Generation (" + str(gen + 1) + "/" + str(NGEN2) + ") completed")
+
+print("End of Optimization")
+print("Displaying results...")
 
 # -----OBTENCIÓN DE ESTADÍSTICAS Y REPRESENTACIÓN GRÁFICA---------------------------------------------------------------
 
