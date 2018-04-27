@@ -24,7 +24,7 @@ def gaussGraphInd(icls, seed, mask):
     # is dependent of the custom gaussian mutation function.
     # Input: The top individual as a seed and the mask of the patient.
     # Output: Weight matrix obtained from mutating and individual with good fitness value.
-    graphInd = matMutGauss(seed, 0.1, 0.1, mask)
+    graphInd = matMutGauss(seed, 0.05, 0.05, mask, 0.05)
     graphInd = graphInd[0]
     return icls(graphInd)
 
@@ -49,7 +49,7 @@ def matMutFloat(individual, rowindpb, elemindpb, mask):
     return individual,
 
 
-def matMutGauss(individual, rowindpb, elemindpb, mask):
+def matMutGauss(individual, rowindpb, elemindpb, mask, sigma):
     size = len(individual)
     for i in range(size):
         rowindMut = random.random()
@@ -60,7 +60,7 @@ def matMutGauss(individual, rowindpb, elemindpb, mask):
                     mu  = individual[i][j]
                     individual[i][j] = random.gauss(mu, 0.1)
                     while individual[i][j] < 0:
-                        individual[i][j] = random.gauss(mu, 0.1)
+                        individual[i][j] = random.gauss(mu, sigma)
                     individual[j][i] = individual[i][j]
     np.place(individual, mask, 0)
     return individual,

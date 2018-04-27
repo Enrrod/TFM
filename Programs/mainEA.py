@@ -10,34 +10,34 @@ from Functions.EvolutionaryFunctions import graphInd, gaussGraphInd, matMutFloat
 from Functions.ClinicParameters import obtainRef, patientMask
 
 
+def main():
 # -----DEFINICIÓN DE LOS PARÁMETROS CLÍNICOS (AUTOVECTOR SANO Y CONEXIONES DAÑADAS)-------------------------------------
 
-filedir = '/home/enrique/Dropbox/TFM/grafos/DrugsCompare/Healthy/60nodos/mean_values.txt'
-phy_mean = obtainRef(filedir)
-graphFileDir = '/home/enrique/Dropbox/TFM/grafos/DrugsCompare/Issues/60nodos/opt_1.graphml'
-mask = patientMask(graphFileDir)
+	filedir = '/home/enrique/Dropbox/TFM/grafos/DrugsCompare/Healthy/60nodos/mean_values.txt'
+	phy_mean = obtainRef(filedir)
+	graphFileDir = '/home/enrique/Dropbox/TFM/grafos/DrugsCompare/Issues/60nodos/opt_1.graphml'
+	mask = patientMask(graphFileDir)
 
 # -----DEFINICIÓN DE LOS PARÁMETROS DE DEAP PARA FASE 1-----------------------------------------------------------------
 
-creator.create('FitnessMin', base.Fitness, weights=(-1.0,))
-creator.create('Individual', np.ndarray, fitness=creator.FitnessMin)
+	creator.create('FitnessMin', base.Fitness, weights=(-1.0,))
+	creator.create('Individual', np.ndarray, fitness=creator.FitnessMin)
 
-# Registro del individuo y la población en la toolbox
+	# Registro del individuo y la población en la toolbox
 
-toolbox = base.Toolbox()
-toolbox.register('individual', graphInd, creator.Individual, dim=70, mask=mask)
-toolbox.register('population', tools.initRepeat, list, toolbox.individual)
+	toolbox = base.Toolbox()
+	toolbox.register('individual', graphInd, creator.Individual, dim=70, mask=mask)
+	toolbox.register('population', tools.initRepeat, list, toolbox.individual)
 
-# Registro de las estrategias evolutivas
+	# Registro de las estrategias evolutivas
 
-toolbox.register('evaluate', fit_function, reference=phy_mean)
-toolbox.register('mate', patchCx)
-toolbox.register('mutate', matMutFloat, rowindpb=0.1, elemindpb=0.1, mask=mask)
-toolbox.register('select', tools.selTournament, tournsize=3)
+	toolbox.register('evaluate', fit_function, reference=phy_mean)
+	toolbox.register('mate', patchCx)
+	toolbox.register('mutate', matMutFloat, rowindpb=0.1, elemindpb=0.1, mask=mask)
+	toolbox.register('select', tools.selTournament, tournsize=3)
 
-# -----EJECUCIÓN DE LA FASE 1 DEL ALGORITMO-----------------------------------------------------------------------------
+	# -----EJECUCIÓN DE LA FASE 1 DEL ALGORITMO-----------------------------------------------------------------------------
 
-def main():
 	# Definición de parametros del algoritmo
 
 	mutpb = 0.3
@@ -55,8 +55,8 @@ def main():
 	# Definición del tamaño de la población y el número de generaciones de la primera fase
 
 	population = toolbox.population(100)
-	NGEN = 200
-	hof = tools.HallOfFame(1, similar=np.array_equal)
+	NGEN = 2000
+	hof = tools.HallOfFame(1, similar=np.array_equal) # Actually not used
 
 	# Ejecución de la primera fase
 
@@ -74,7 +74,7 @@ def main():
 	print("End of Phase 1")
 	print("Setting parameters for Phase 2...")
 
-	# -----DEFINICIÓN DE LOS PARÁMETROS DE DEAP PARA FASE 2-----------------------------------------------------------------
+# -----DEFINICIÓN DE LOS PARÁMETROS DE DEAP PARA FASE 2-----------------------------------------------------------------
 
 	# Individuo semilla a partir del que crear la poblacion incial de la segunda fase
 
@@ -89,17 +89,20 @@ def main():
 
 	toolbox.register('evaluate', fit_function, reference=phy_mean)
 	toolbox.register('mate', patchCx)
-	toolbox.register('mutate', matMutGauss, rowindpb=0.1, elemindpb=0.1, mask=mask)
+	toolbox.register('mutate', matMutGauss, rowindpb=0.1, elemindpb=0.1, mask=mask, sigma=0.05)
 	toolbox.register('select', tools.selTournament, tournsize=3)
 
 	# Definición del tamaño de la población y el número de generaciones de la segunda fase
 
 	population = toolbox.population(100)
 	NGEN2 = NGEN * 2
-	hof = tools.HallOfFame(1, similar=np.array_equal)
+	hof = tools.HallOfFame(1, similar=np.array_equal) # Actually not used
+	mutpb = 0.1
+	cxpb = 0.3
 
 	# Ejecución de la segunda fase
 
+	print("Cross probability: " + str(int(cxpb * 100)) + "% | Mutation probability: " + str(int(mutpb * 100)) + "%")
 	for gen in range(NGEN, NGEN2):
 		offspring = algorithms.varAnd(population, toolbox, cxpb, mutpb)
 		fits = toolbox.map(toolbox.evaluate, offspring)
@@ -114,7 +117,7 @@ def main():
 	print("End of Optimization")
 	print("Displaying results...")
 
-	# -----OBTENCIÓN DE ESTADÍSTICAS Y REPRESENTACIÓN GRÁFICA---------------------------------------------------------------
+# -----OBTENCIÓN DE ESTADÍSTICAS Y REPRESENTACIÓN GRÁFICA---------------------------------------------------------------
 
 	# Creación de variables para guardar las estadísticas
 
@@ -147,7 +150,7 @@ def main():
 	plt.title("cxpb= " + str(cxpb) + " mutpb= " + str(mutpb))
 	plt.show()
 
-	# -----ALMACENAMIENTO DE ESTADÍSTICAS-----------------------------------------------------------------------------------
+# -----ALMACENAMIENTO DE ESTADÍSTICAS-----------------------------------------------------------------------------------
 
 	# Definición de las rutas de los archivos a guardar
 
